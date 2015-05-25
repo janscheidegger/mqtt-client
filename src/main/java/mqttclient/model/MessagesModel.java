@@ -22,6 +22,7 @@ public class MessagesModel extends Observable {
         return clientTopics;
     }
 
+    // Todo: Remove Logic Here!
     public void addClientTopic(ClientTopic newClientTopic) {
         clientTopics.add(newClientTopic);
         notifyObservers();

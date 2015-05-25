@@ -26,8 +26,6 @@ public class Observable {
     }
 
     public void notifyObservers() {
-        for(ObserverInfo observer : observers) {
-            observer.invoke();
-        }
+        observers.forEach(main.java.mqttclient.observer.ObserverInfo::invoke);
     }
 }

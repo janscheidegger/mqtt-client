@@ -24,6 +24,7 @@ public class ClientTopic {
 
     public ClientTopic(String topicName) {
         this.name  = new SimpleStringProperty(topicName);
+        // Todo: Remove Logic here!
         mqttAccessor = new MqttAccessor("tcp://iot.eclipse.org:1883");
         mqttAccessor.subscribeTopic(topicName);
         try {
