@@ -2,10 +2,6 @@ package main.java.mqttclient.model;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import main.java.mqttclient.mqtt.MqttAccessor;
-import main.java.mqttclient.observer.ObserverException;
-import main.java.mqttclient.observer.Update;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,21 +13,12 @@ import java.util.List;
  */
 public class ClientTopic {
 
-    private MqttAccessor mqttAccessor;
     private final StringProperty name;
     List<ClientMessage> messages = new ArrayList<ClientMessage>();
 
 
     public ClientTopic(String topicName) {
         this.name  = new SimpleStringProperty(topicName);
-        // Todo: Remove Logic here!
-        mqttAccessor = new MqttAccessor("tcp://iot.eclipse.org:1883");
-        mqttAccessor.subscribeTopic(topicName);
-        try {
-            mqttAccessor.add(this);
-        } catch (ObserverException e) {
-            e.printStackTrace();
-        }
     }
 
     public String getName() {
@@ -54,16 +41,4 @@ public class ClientTopic {
         this.messages = messages;
     }
 
-    public MqttAccessor getMqttAccessor() {
-       return mqttAccessor;
-    }
-
-    @Update
-    public void update() {
-        messages.clear();
-        for(MqttMessage message : mqttAccessor.getMqttMessages()) {
-            messages.add(new ClientMessage(message.getPayload().toString()));
-            System.out.println("added Message to Client Messages list");
-        }
-    }
 }

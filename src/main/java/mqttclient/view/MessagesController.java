@@ -4,15 +4,15 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import main.java.mqttclient.model.ClientMessage;
 import main.java.mqttclient.model.ClientTopic;
-import main.java.mqttclient.model.MessagesModel;
-import main.java.mqttclient.observer.ObserverException;
-import main.java.mqttclient.observer.Update;
+import main.java.mqttclient.mqtt.MqttAccessor;
 
+import java.util.Observable;
+import java.util.Observer;
 import java.util.stream.Collectors;
 
 
@@ -21,44 +21,58 @@ import java.util.stream.Collectors;
  *
  * @author jan
  */
-public class MessagesController {
+public class MessagesController implements Observer {
 
-    private MessagesModel messagesModel;
-    private ObservableList<ClientTopic> clientMessageData;
+
+    private MqttAccessor mqttAccessor;
     private ObservableList<String> messagesList = FXCollections.observableArrayList();
+    private ObservableList<ClientTopic> topicsList = FXCollections.observableArrayList();
 
 
     @FXML
     private Label topicNameLabel;
 
     @FXML
-    private TableView<ClientTopic> topicsTable;
+    private TextField topicNameTextField;
+
 
     @FXML
-    private TableColumn<ClientTopic, String> messageColumn;
+    ListView<ClientTopic> topicsListView;
 
     @FXML
     ListView<String> messagesListView;
 
     public MessagesController() {
-
+        mqttAccessor = MqttAccessor.getInstance();
+        mqttAccessor.addObserver(this);
     }
 
     @FXML
     private void initialize() {
-
-        clientMessageData = FXCollections.observableArrayList();
-        topicsTable.setItems(clientMessageData);
-
-        messageColumn.setCellValueFactory(cellData -> cellData.getValue().nameProperty());
-
-        showMessageDetails(null);
-
-        topicsTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> showMessageDetails(newValue));
+        topicsListView.setItems(topicsList);
+        topicsListView.setCellFactory(cell -> new ListCell<ClientTopic>() {
+            @Override
+            protected void updateItem(ClientTopic item, boolean empty) {
+                super.updateItem(item, empty);
+                if(empty) {
+                    setText(null);
+                } else {
+                    setText(item.getName());
+                }
+            }
+        });
+        topicsListView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> showMessagesForTopic(newValue));
 
     }
 
-    private void showMessageDetails(ClientTopic clientTopic) {
+    @FXML
+    private void subscribeTopic() {
+        String topicName = topicNameTextField.getText();
+        ClientTopic clientTopic = mqttAccessor.subscribeTopic("tcp://iot.eclipse.org:1883" ,topicName);
+        topicsList.add(clientTopic);
+    }
+
+    private void showMessagesForTopic(ClientTopic clientTopic) {
         if(clientTopic != null) {
             topicNameLabel.setText(clientTopic.getName());
             if(clientTopic.getMessages() != null) {
@@ -72,19 +86,24 @@ public class MessagesController {
         }
     }
 
-    public void setModel(MessagesModel messagesModel) {
-        this.messagesModel = messagesModel;
 
-        this.clientMessageData.addAll(this.messagesModel.getClientTopicData());
-        try {
-            this.messagesModel.add(this);
-        } catch (ObserverException e) {
-            e.printStackTrace();
+    @Override
+    public void update(Observable o, Object arg) {
+        if(arg instanceof ClientMessage) {
+
+            System.out.println("got message from observable");
+            System.out.printf("Topic was: %s%n", ((ClientMessage) arg).getTopicName());
+            System.out.printf("message is: %s%n", ((ClientMessage) arg).getMessage());
+            String topicName = ((ClientMessage) arg).getTopicName();
+            for(ClientTopic topic : topicsList) {
+                if(topic.getName().equals(topicName)) {
+                    topic.getMessages().add((ClientMessage)arg);
+                    System.out.println("added message to topic");
+                    return;
+                }
+            }
+            System.out.println("something went wrong!");
+
         }
-    }
-
-    @Update
-    public void update() {
-
     }
 }

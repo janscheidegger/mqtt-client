@@ -1,11 +1,12 @@
 package main.java.mqttclient.mqtt;
 
-import main.java.mqttclient.observer.Observable;
+import main.java.mqttclient.model.ClientMessage;
+import main.java.mqttclient.model.ClientTopic;
 import org.eclipse.paho.client.mqttv3.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * mqqt-client
@@ -14,38 +15,64 @@ import java.util.UUID;
  */
 public class MqttAccessor extends Observable implements MqttCallback {
 
-    private MqttClient mqttClient;
-    private final String brokerUrl;
+    private static final Logger LOGGER = Logger.getLogger(MqttAccessor.class.getName());
+
+    private MqttAccessor() {
+    }
+
+    private static MqttAccessor instance = null;
+    private Map<String, MqttClient> mqttClientMap = new HashMap<>();
+
+
+    public static MqttAccessor getInstance() {
+        if (instance == null) {
+            synchronized (MqttAccessor.class) {
+                if (instance == null) {
+                    instance = new MqttAccessor();
+                }
+            }
+        }
+        return instance;
+    }
+
+    private MqttClient connect(String brokerUrl) throws MqttException {
+
+        try {
+            MqttClient mqttClient = new MqttClient(brokerUrl, UUID.randomUUID().toString());
+            mqttClient.connect();
+            System.out.println("Connected to " + brokerUrl);
+            mqttClientMap.put(brokerUrl, mqttClient);
+            return mqttClient;
+        } catch (MqttException e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+
     private boolean currentlyListening = false;
 
     private int debugCounter = 0;
 
     private List<MqttMessage> mqttMessages = new ArrayList<>();
 
-    public MqttAccessor(String brokerUrl) {
-        this.brokerUrl = brokerUrl;
-        try {
-            mqttClient = connect(brokerUrl);
-        } catch (MqttException e) {
-            e.printStackTrace();
-            System.err.println("Error while establishing connection to: " + brokerUrl);
-        }
-    }
 
     @Override
     public void connectionLost(Throwable throwable) {
-        System.out.println("Lost Connection to Broker: " +brokerUrl);
+        System.out.println("Lost Connection to Broker: ");
     }
 
     @Override
     public void messageArrived(String topic, MqttMessage mqttMessage) throws Exception {
         System.out.println("Topic: " + topic + " received message!");
         mqttMessages.add(mqttMessage);
+        ClientMessage clientMessage = new ClientMessage(topic, mqttMessage.toString());
         debugCounter++;
         if (debugCounter > 10) {
             currentlyListening = false;
         }
-        notifyObservers();
+        setChanged();
+        notifyObservers(clientMessage);
     }
 
     @Override
@@ -53,21 +80,33 @@ public class MqttAccessor extends Observable implements MqttCallback {
 
     }
 
-    public void subscribeTopic(String topicName) {
+    public ClientTopic subscribeTopic(String brokerUrl, String topicName) {
         try {
+            MqttClient mqttClient = null;
+            if (mqttClientMap.get(brokerUrl) != null) {
+                mqttClient = mqttClientMap.get(brokerUrl);
+
+            } else {
+                mqttClient = connect(brokerUrl);
+            }
             mqttClient.setCallback(this);
             mqttClient.subscribe(topicName);
+
             System.out.println("subscribed to Topic: " + topicName);
             currentlyListening = true;
+
+            return new ClientTopic(topicName);
         } catch (MqttException e) {
             e.printStackTrace();
             System.err.println("Error while connecting to " + topicName + " on Broker :" + brokerUrl);
         }
+        return null;
     }
 
 
-    public void disconnect() {
+    public void disconnect(String brokerUrl) {
         try {
+            MqttClient mqttClient = mqttClientMap.get(brokerUrl);
             mqttClient.disconnect();
             System.out.println("Successfully disconnected");
         } catch (MqttException e) {
@@ -76,17 +115,17 @@ public class MqttAccessor extends Observable implements MqttCallback {
         }
     }
 
-    private MqttClient connect(String brokerUrl) throws MqttException {
-        try {
-            MqttClient mqttClient = new MqttClient(brokerUrl, UUID.randomUUID().toString());
-            mqttClient.connect();
-            System.out.println("Connected to " + brokerUrl);
-            return mqttClient;
-        } catch (MqttException e) {
-            e.printStackTrace();
-            throw e;
-        }
+    public void disconnectAll() {
+        mqttClientMap.forEach((s, mqttClient) -> {
+            try {
+                mqttClient.disconnect();
+                LOGGER.log(Level.INFO, "Disconnected from: " + mqttClient.getServerURI());
+            } catch (MqttException e) {
+                e.printStackTrace();
+            }
+        });
     }
+
 
     public boolean isCurrentlyListening() {
         return currentlyListening;

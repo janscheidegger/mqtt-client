@@ -10,11 +10,25 @@ import javafx.beans.property.StringProperty;
  */
 public class ClientMessage {
 
-
+    private final StringProperty topicName;
     private final StringProperty message;
 
-    public ClientMessage(String message) {
+
+    public ClientMessage(String topicName, String message) {
         this.message = new SimpleStringProperty(message);
+        this.topicName = new SimpleStringProperty(topicName);
+    }
+
+    public String getTopicName() {
+        return topicName.get();
+    }
+
+    public StringProperty topicNameProperty() {
+        return topicName;
+    }
+
+    public void setTopicName(String topicName) {
+        this.topicName.set(topicName);
     }
 
     public String getMessage() {

@@ -2,19 +2,12 @@ package main.java.mqttclient;
 
 
 import javafx.application.Application;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
-import main.java.mqttclient.model.ClientMessage;
-import main.java.mqttclient.model.ClientTopic;
-import main.java.mqttclient.model.MessagesModel;
-import main.java.mqttclient.view.MessagesController;
+import main.java.mqttclient.mqtt.MqttAccessor;
 
 import java.io.IOException;
 
@@ -30,7 +23,6 @@ public class Main extends Application {
 
     private Stage primaryStage;
     private BorderPane rootLayout;
-    MessagesModel messagesModel = new MessagesModel();
 
 
 
@@ -46,14 +38,7 @@ public class Main extends Application {
         initRootLayout();
         showMessages();
 
-        primaryStage.setOnHiding(new EventHandler<WindowEvent>() {
-            @Override
-            public void handle(WindowEvent event) {
-                for(ClientTopic clientTopic : messagesModel.getClientTopicData()) {
-                    clientTopic.getMqttAccessor().disconnect();
-                }
-            }
-        });
+        primaryStage.setOnHiding(event -> MqttAccessor.getInstance().disconnectAll());
 
     }
 
@@ -66,7 +51,6 @@ public class Main extends Application {
 
             rootLayout.setCenter(messageView);
 
-            loader.<MessagesController>getController().setModel(messagesModel);
 
         } catch (IOException e) {
             e.printStackTrace();

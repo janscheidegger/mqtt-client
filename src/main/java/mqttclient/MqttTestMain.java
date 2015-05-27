@@ -13,10 +13,10 @@ public class MqttTestMain {
 
 
     public static void main(String[] args) {
-        MqttAccessor mqttAccessor = new MqttAccessor("tcp://iot.eclipse.org:1883");
+        MqttAccessor mqttAccessor = MqttAccessor.getInstance();
 
 
-        mqttAccessor.subscribeTopic("jan/test");
+        mqttAccessor.subscribeTopic("tcp://iot.eclipse.org:1883", "jan/test");
 
         while(mqttAccessor.isCurrentlyListening()) {
             try {
@@ -27,7 +27,7 @@ public class MqttTestMain {
             }
         }
 
-        mqttAccessor.disconnect();
+        mqttAccessor.disconnectAll();
         System.exit(0);
 
     }
