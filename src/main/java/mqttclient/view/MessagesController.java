@@ -1,18 +1,18 @@
 package main.java.mqttclient.view;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import main.java.mqttclient.model.ClientMessage;
 import main.java.mqttclient.model.ClientTopic;
 import main.java.mqttclient.mqtt.MqttAccessor;
 
 import java.util.Observable;
 import java.util.Observer;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 
@@ -25,7 +25,7 @@ public class MessagesController implements Observer {
 
 
     private MqttAccessor mqttAccessor;
-    private ObservableList<String> messagesList = FXCollections.observableArrayList();
+    private ObservableList<ClientMessage> messagesList = FXCollections.observableArrayList();
     private ObservableList<ClientTopic> topicsList = FXCollections.observableArrayList();
 
 
@@ -35,12 +35,14 @@ public class MessagesController implements Observer {
     @FXML
     private TextField topicNameTextField;
 
+    @FXML
+    private CheckBox formattedTopicCheckbox;
 
     @FXML
     ListView<ClientTopic> topicsListView;
 
     @FXML
-    ListView<String> messagesListView;
+    ListView<ClientMessage> messagesListView;
 
     public MessagesController() {
         mqttAccessor = MqttAccessor.getInstance();
@@ -54,32 +56,45 @@ public class MessagesController implements Observer {
             @Override
             protected void updateItem(ClientTopic item, boolean empty) {
                 super.updateItem(item, empty);
-                if(empty) {
+                if (empty) {
                     setText(null);
                 } else {
-                    setText(item.getName());
+                    setText(item.getName() + "\t" + (item.getFormattedTopic() ? "(formatted)" : "(free)"));
                 }
             }
         });
         topicsListView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> showMessagesForTopic(newValue));
-
+        messagesListView.setItems(messagesList);
+        messagesListView.setCellFactory(cell -> new ListCell<ClientMessage>() {
+            protected void updateItem(ClientMessage message, boolean empty) {
+                super.updateItem(message, empty);
+                if (empty) {
+                    setText(null);
+                } else {
+                    setText(message.getMessage());
+                }
+            }
+        });
     }
 
     @FXML
-    private void subscribeTopic() {
+    private void subscribeTopic() throws ExecutionException, InterruptedException {
         String topicName = topicNameTextField.getText();
-        ClientTopic clientTopic = mqttAccessor.subscribeTopic("tcp://iot.eclipse.org:1883" ,topicName);
+        boolean isFormattedTopic = formattedTopicCheckbox.isSelected();
+
+        ClientTopic clientTopic = mqttAccessor.subscribeTopic("tcp://iot.eclipse.org:1883", topicName, isFormattedTopic);
+
         topicsList.add(clientTopic);
+
     }
 
     private void showMessagesForTopic(ClientTopic clientTopic) {
-        if(clientTopic != null) {
+        if (clientTopic != null) {
             topicNameLabel.setText(clientTopic.getName());
-            if(clientTopic.getMessages() != null) {
-                messagesList.addAll(clientTopic.getMessages().stream().map(ClientMessage::getMessage).collect(Collectors.toList()));
-                messagesListView.getItems().clear();
-                messagesListView.setItems(messagesList);
-            }
+            if (clientTopic.getMessages() != null) {
+                messagesList.clear();
+                messagesList.addAll(clientTopic.getMessages());
+        }
         } else {
             topicNameLabel.setText("");
             messagesListView.setItems(messagesList);
@@ -89,15 +104,15 @@ public class MessagesController implements Observer {
 
     @Override
     public void update(Observable o, Object arg) {
-        if(arg instanceof ClientMessage) {
+        if (arg instanceof ClientMessage) {
 
             System.out.println("got message from observable");
             System.out.printf("Topic was: %s%n", ((ClientMessage) arg).getTopicName());
             System.out.printf("message is: %s%n", ((ClientMessage) arg).getMessage());
             String topicName = ((ClientMessage) arg).getTopicName();
-            for(ClientTopic topic : topicsList) {
-                if(topic.getName().equals(topicName)) {
-                    topic.getMessages().add((ClientMessage)arg);
+            for (ClientTopic topic : topicsList) {
+                if (topic.getName().equals(topicName)) {
+                    topic.getMessages().add((ClientMessage) arg);
                     System.out.println("added message to topic");
                     return;
                 }

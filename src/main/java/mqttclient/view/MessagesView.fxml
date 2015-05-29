@@ -10,15 +10,33 @@
         <items>
           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
                <children>
-                  <TextField fx:id="topicNameTextField" layoutY="2.0" prefHeight="32.0" prefWidth="175.0" />
-                  <ListView fx:id="topicsListView" layoutY="62.0" prefHeight="329.0" prefWidth="175.0" />
-                  <Button layoutY="37.0" mnemonicParsing="false" onAction="#subscribeTopic" prefHeight="25.0" prefWidth="175.0" text="Subscribe" />
+                  <TextField fx:id="topicNameTextField" layoutX="7.0" layoutY="9.0" prefHeight="25.0" prefWidth="125.0" promptText="Enter Topicname" />
+                  <ListView fx:id="topicsListView" layoutY="71.0" prefHeight="320.0" prefWidth="175.0" />
+                  <Button layoutX="8.0" layoutY="37.0" mnemonicParsing="false" onAction="#subscribeTopic" prefHeight="17.0" prefWidth="149.0" text="Subscribe" />
+                  <CheckBox fx:id="formattedTopicCheckbox" layoutX="140.0" layoutY="13.0" mnemonicParsing="false" />
                </children>
             </AnchorPane>
           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
                <children>
-                  <Label fx:id="topicNameLabel" layoutX="9.0" layoutY="11.0" prefHeight="39.0" prefWidth="416.0" text="Label" AnchorPane.bottomAnchor="359.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                  <ListView fx:id="messagesListView" layoutY="69.0" prefHeight="329.0" prefWidth="417.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="69.0" />
+                  <TabPane layoutY="82.0" prefHeight="320.0" prefWidth="417.0" tabClosingPolicy="UNAVAILABLE">
+                    <tabs>
+                      <Tab text="Data">
+                           <content>
+                          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="294.0" prefWidth="417.0">
+                                 <children>
+                                    <ListView fx:id="messagesListView" layoutY="1.0" prefHeight="279.0" prefWidth="417.0" AnchorPane.bottomAnchor="11.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="1.0" />
+                                 </children>
+                              </AnchorPane>
+                           </content>
+                      </Tab>
+                      <Tab text="Visual">
+                        <content>
+                          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="346.0" prefWidth="407.0" />
+                        </content>
+                      </Tab>
+                    </tabs>
+                  </TabPane>
+                  <Label fx:id="topicNameLabel" layoutX="14.0" layoutY="14.0" prefHeight="52.0" prefWidth="200.0" AnchorPane.bottomAnchor="332.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="203.0" AnchorPane.topAnchor="14.0" />
                </children></AnchorPane>
         </items>
       </SplitPane>

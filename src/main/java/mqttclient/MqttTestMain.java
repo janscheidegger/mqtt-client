@@ -16,7 +16,7 @@ public class MqttTestMain {
         MqttAccessor mqttAccessor = MqttAccessor.getInstance();
 
 
-        mqttAccessor.subscribeTopic("tcp://iot.eclipse.org:1883", "jan/test");
+        mqttAccessor.subscribeTopic("tcp://iot.eclipse.org:1883", "jan/test", false);
 
         while(mqttAccessor.isCurrentlyListening()) {
             try {

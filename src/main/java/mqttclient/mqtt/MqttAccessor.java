@@ -20,7 +20,7 @@ public class MqttAccessor extends Observable implements MqttCallback {
     private MqttAccessor() {
     }
 
-    private static MqttAccessor instance = null;
+    private static volatile MqttAccessor instance = null;
     private Map<String, MqttClient> mqttClientMap = new HashMap<>();
 
 
@@ -67,11 +67,8 @@ public class MqttAccessor extends Observable implements MqttCallback {
         System.out.println("Topic: " + topic + " received message!");
         mqttMessages.add(mqttMessage);
         ClientMessage clientMessage = new ClientMessage(topic, mqttMessage.toString());
-        debugCounter++;
-        if (debugCounter > 10) {
-            currentlyListening = false;
-        }
         setChanged();
+
         notifyObservers(clientMessage);
     }
 
@@ -80,9 +77,9 @@ public class MqttAccessor extends Observable implements MqttCallback {
 
     }
 
-    public ClientTopic subscribeTopic(String brokerUrl, String topicName) {
+    public ClientTopic subscribeTopic(String brokerUrl, String topicName, boolean isFormattedTopic) {
         try {
-            MqttClient mqttClient = null;
+            MqttClient mqttClient;
             if (mqttClientMap.get(brokerUrl) != null) {
                 mqttClient = mqttClientMap.get(brokerUrl);
 
@@ -95,7 +92,7 @@ public class MqttAccessor extends Observable implements MqttCallback {
             System.out.println("subscribed to Topic: " + topicName);
             currentlyListening = true;
 
-            return new ClientTopic(topicName);
+            return new ClientTopic(topicName, isFormattedTopic);
         } catch (MqttException e) {
             e.printStackTrace();
             System.err.println("Error while connecting to " + topicName + " on Broker :" + brokerUrl);
@@ -119,7 +116,7 @@ public class MqttAccessor extends Observable implements MqttCallback {
         mqttClientMap.forEach((s, mqttClient) -> {
             try {
                 mqttClient.disconnect();
-                LOGGER.log(Level.INFO, "Disconnected from: " + mqttClient.getServerURI());
+                LOGGER.log(Level.FINE, "Disconnected from: {0}", mqttClient.getServerURI());
             } catch (MqttException e) {
                 e.printStackTrace();
             }
