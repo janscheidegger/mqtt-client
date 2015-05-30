@@ -5,6 +5,7 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
+import javax.xml.crypto.dsig.keyinfo.KeyValue;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +19,7 @@ public class ClientTopic {
     private final StringProperty name;
     private final BooleanProperty formattedTopic;
     List<ClientMessage> messages = new ArrayList<ClientMessage>();
+    List<KeyValuePair> keyValuePairs = new ArrayList<>();
 
 
     public ClientTopic(String topicName, boolean formattedTopic) {
@@ -37,7 +39,7 @@ public class ClientTopic {
         this.name.set(name);
     }
 
-    public boolean getFormattedTopic() {
+    public boolean isFormattedTopic() {
         return formattedTopic.get();
     }
 
@@ -57,4 +59,21 @@ public class ClientTopic {
         this.messages = messages;
     }
 
+    public List<KeyValuePair> getKeyValuePairs() {
+        return keyValuePairs;
+    }
+
+    public void setKeyValuePairs(List<KeyValuePair> keyValuePairs) {
+        this.keyValuePairs = keyValuePairs;
+    }
+
+    public void addKeyValuePair(String key, int value) {
+        for(KeyValuePair kvp : keyValuePairs) {
+            if(kvp.getKey().equals(key)) {
+                kvp.setValue(kvp.getValue() + value);
+                return;
+            }
+        }
+        keyValuePairs.add(new KeyValuePair(key, value));
+    }
 }
