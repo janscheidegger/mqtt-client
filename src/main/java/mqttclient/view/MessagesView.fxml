@@ -6,15 +6,15 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.java.mqttclient.view.MessagesController">
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.java.mqttclient.view.MessagesController">
    <children>
       <SplitPane dividerPositions="0.29797979797979796" layoutX="120.0" layoutY="80.0" prefHeight="400.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <items>
-          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+          <AnchorPane maxWidth="200.0" minHeight="200.0" minWidth="200.0" prefHeight="160.0" prefWidth="200.0">
                <children>
                   <VBox alignment="CENTER" prefHeight="398.0" prefWidth="174.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                      <children>
-                        <HBox alignment="TOP_CENTER" maxHeight="40.0" prefHeight="40.0" prefWidth="200.0" spacing="10.0">
+                        <HBox alignment="TOP_CENTER" maxHeight="40.0" maxWidth="200.0" prefHeight="40.0" prefWidth="200.0" spacing="10.0">
                            <children>
                               <TextField fx:id="topicNameTextField" maxHeight="25.0" prefHeight="25.0" prefWidth="125.0" promptText="Enter Topicname" />
                               <CheckBox fx:id="formattedTopicCheckbox" maxHeight="25.0" mnemonicParsing="false" prefHeight="25.0">
@@ -24,8 +24,8 @@
                               </CheckBox>
                            </children>
                         </HBox>
-                        <Button alignment="CENTER" maxHeight="30.0" minWidth="-Infinity" mnemonicParsing="false" onAction="#subscribeTopic" prefHeight="30.0" prefWidth="155.0" text="Subscribe" />
-                        <ListView fx:id="topicsListView" />
+                        <Button alignment="CENTER" maxHeight="30.0" mnemonicParsing="false" onAction="#subscribeTopic" prefHeight="30.0" prefWidth="155.0" text="Subscribe" />
+                        <ListView fx:id="topicsListView" VBox.vgrow="ALWAYS" />
                      </children>
                   </VBox>
                </children>
@@ -39,9 +39,9 @@
                           <tabs>
                             <Tab text="Data">
                                  <content>
-                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="294.0" prefWidth="417.0">
+                                <AnchorPane minHeight="0.0" minWidth="0.0">
                                        <children>
-                                          <ListView fx:id="messagesListView" layoutY="1.0" prefHeight="339.0" prefWidth="416.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                          <ListView fx:id="messagesListView" layoutY="1.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                                        </children>
                                     </AnchorPane>
                                  </content>
