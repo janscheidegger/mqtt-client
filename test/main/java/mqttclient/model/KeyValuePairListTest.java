@@ -24,9 +24,9 @@ public class KeyValuePairListTest {
         JAXBContext jc;
 
         List<KeyValuePair> keyValuePairs = new ArrayList<KeyValuePair>();
-        keyValuePairs.add(new KeyValuePair("Key", "value"));
-        keyValuePairs.add(new KeyValuePair("Key2", "value2"));
-        keyValuePairs.add(new KeyValuePair("Key3", "value3"));
+        keyValuePairs.add(new KeyValuePair("Key", 1));
+        keyValuePairs.add(new KeyValuePair("Key2", 2));
+        keyValuePairs.add(new KeyValuePair("Key3", 3));
 
         KeyValuePairList kvpList = new KeyValuePairList();
         kvpList.setKeyValuePairList(keyValuePairs);

@@ -9,7 +9,7 @@ import java.util.ResourceBundle;
  */
 public class I18n {
 
-    private static final String BASE_NAME = "resources.i18n.Messages";
+    private static final String BASE_NAME = "i18n.Messages";
 
     private static ResourceBundle i18nBundle = ResourceBundle.getBundle(BASE_NAME);
 

@@ -70,6 +70,7 @@ public class MessagesController implements Observer {
         });
 
 
+
         chart.setData(pieChartData);
         topicsListView.getItems().setAll(topicsMap.keySet());
 
@@ -103,6 +104,7 @@ public class MessagesController implements Observer {
             topicNameLabel.setText(clientTopic.getName());
             messagesList.clear();
             if(clientTopic.isFormattedTopic()) {
+
                 chartTab.setDisable(false);
                 messagesList.addAll(clientTopic.getKeyValuePairs().stream().map(kvp -> new ClientMessage(clientTopic.getName(), kvp.getKey() + ": " + kvp.getValue())).collect(Collectors.toList()));
                 pieChartData.clear();
@@ -136,7 +138,7 @@ public class MessagesController implements Observer {
                         topic.addKeyValuePair(kvp.getKey(), kvp.getValue());
                     }
                 }
-                if(topicsListView.getSelectionModel().getSelectedItem().equals(topicName)) {
+                if(topicsListView.getSelectionModel().getSelectedItem() != null && topicsListView.getSelectionModel().getSelectedItem().equals(topicName)) {
                     showMessagesForTopic(topic);
                 }
             }
