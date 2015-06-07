@@ -9,6 +9,7 @@ import javafx.collections.ObservableMap;
 import javafx.fxml.FXML;
 import javafx.scene.chart.PieChart;
 import javafx.scene.control.*;
+import main.java.mqttclient.i18n.I18n;
 import main.java.mqttclient.model.ClientMessage;
 import main.java.mqttclient.model.ClientTopic;
 import main.java.mqttclient.model.KeyValuePair;
@@ -16,6 +17,8 @@ import main.java.mqttclient.model.KeyValuePairList;
 import main.java.mqttclient.mqtt.MqttAccessor;
 import main.java.mqttclient.parser.FormattedMessageParser;
 
+import java.util.Collections;
+import java.util.Locale;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.concurrent.ExecutionException;
@@ -90,14 +93,26 @@ public class MessagesController implements Observer {
 
     @FXML
     private void subscribeTopic() throws ExecutionException, InterruptedException {
-        String topicName = topicNameTextField.getText();
-        boolean isFormattedTopic = formattedTopicCheckbox.isSelected();
+        ObservableList<String> styleClass = topicNameTextField.getStyleClass();
+        if (topicNameTextField.getText().trim().length()==0) {
+            if (! styleClass.contains("error")) {
+                styleClass.add("error");
+            }
+            I18n.setLocale(Locale.GERMAN);
+            Alert alert = new Alert(Alert.AlertType.ERROR, I18n.getString("error.topicname.missing"));
+            alert.show();
+        } else {
+            // remove all occurrences:
+            styleClass.removeAll(Collections.singleton("error"));
+            String topicName = topicNameTextField.getText();
+            boolean isFormattedTopic = formattedTopicCheckbox.isSelected();
 
-        ClientTopic clientTopic = mqttAccessor.subscribeTopic("tcp://iot.eclipse.org:1883", topicName, isFormattedTopic);
+            ClientTopic clientTopic = mqttAccessor.subscribeTopic("tcp://iot.eclipse.org:1883", topicName, isFormattedTopic);
 
-        topicsMap.put(topicName, clientTopic);
-
+            topicsMap.put(topicName, clientTopic);
+        }
     }
+
 
     private void showMessagesForTopic(ClientTopic clientTopic) {
         if (clientTopic != null) {

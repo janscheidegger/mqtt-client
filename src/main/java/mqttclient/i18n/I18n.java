@@ -1,5 +1,6 @@
 package main.java.mqttclient.i18n;
 
+
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
@@ -11,7 +12,8 @@ public class I18n {
 
     private static final String BASE_NAME = "i18n.Messages";
 
-    private static ResourceBundle i18nBundle = ResourceBundle.getBundle(BASE_NAME);
+    //TODO: Remove Locale German from getBundle
+    private static ResourceBundle i18nBundle = ResourceBundle.getBundle(BASE_NAME, Locale.GERMAN);
 
     public static void setLocale(Locale locale) {
         i18nBundle = ResourceBundle.getBundle(BASE_NAME, locale);
