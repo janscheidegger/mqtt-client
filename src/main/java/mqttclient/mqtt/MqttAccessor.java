@@ -20,9 +20,9 @@ public class MqttAccessor extends Observable implements MqttCallback {
     private MqttAccessor() {
     }
 
-    private static volatile MqttAccessor instance = null;
     private Map<String, MqttClient> mqttClientMap = new HashMap<>();
 
+    private static volatile MqttAccessor instance = null;
 
     public static MqttAccessor getInstance() {
         if (instance == null) {

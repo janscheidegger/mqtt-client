@@ -10,10 +10,7 @@ import javafx.fxml.FXML;
 import javafx.scene.chart.PieChart;
 import javafx.scene.control.*;
 import main.java.mqttclient.i18n.I18n;
-import main.java.mqttclient.model.ClientMessage;
-import main.java.mqttclient.model.ClientTopic;
-import main.java.mqttclient.model.KeyValuePair;
-import main.java.mqttclient.model.KeyValuePairList;
+import main.java.mqttclient.model.*;
 import main.java.mqttclient.mqtt.MqttAccessor;
 import main.java.mqttclient.parser.FormattedMessageParser;
 
@@ -39,6 +36,17 @@ public class MessagesController implements Observer {
     @FXML
     ListView<ClientMessage> messagesListView;
     @FXML
+    TableView<LogEntry> logEntryTableView;
+
+    @FXML
+    TableColumn<LogEntry, String> severityColumn;
+
+    @FXML
+    TableColumn<LogEntry, String> timeColumn;
+
+    @FXML
+    TableColumn<LogEntry, String> messageColumn;
+    @FXML
     PieChart chart;
 
     @FXML
@@ -48,6 +56,8 @@ public class MessagesController implements Observer {
     private FormattedMessageParser formattedMessageParser;
     private ObservableList<ClientMessage> messagesList = FXCollections.observableArrayList();
     private ObservableMap<String, ClientTopic> topicsMap = FXCollections.observableHashMap();
+    private ObservableList<LogEntry> logData = FXCollections.observableArrayList();
+
     @FXML
     private Label topicNameLabel;
     @FXML
@@ -65,6 +75,8 @@ public class MessagesController implements Observer {
     @FXML
     private void initialize() {
 
+        addLogEntry(LogEntry.LogLevel.DEBUG, "Controller Initialized");
+
         topicsMap.addListener((MapChangeListener<String, ClientTopic>) change -> {
             topicsListView.getItems().removeAll(change.getKey());
             if (change.wasAdded()) {
@@ -72,7 +84,7 @@ public class MessagesController implements Observer {
             }
         });
 
-
+        logEntryTableView.setItems(logData);
 
         chart.setData(pieChartData);
         topicsListView.getItems().setAll(topicsMap.keySet());
@@ -89,12 +101,25 @@ public class MessagesController implements Observer {
                 }
             }
         });
+
+
+        messageColumn.setCellValueFactory(cellData -> cellData.getValue().messageProperty());
+        timeColumn.setCellValueFactory(cellData -> cellData.getValue().timeProperty().asString());
+        severityColumn.setCellValueFactory(cellData -> cellData.getValue().logLevelProperty().asString());
+
+
+
+    }
+
+    private void addLogEntry(LogEntry.LogLevel logLevel, String message) {
+        logData.add(new LogEntry(logLevel, message));
     }
 
     @FXML
     private void subscribeTopic() throws ExecutionException, InterruptedException {
         ObservableList<String> styleClass = topicNameTextField.getStyleClass();
         if (topicNameTextField.getText().trim().length()==0) {
+            addLogEntry(LogEntry.LogLevel.ERROR, "Invalid Topic!");
             if (! styleClass.contains("error")) {
                 styleClass.add("error");
             }
@@ -110,6 +135,7 @@ public class MessagesController implements Observer {
             ClientTopic clientTopic = mqttAccessor.subscribeTopic("tcp://iot.eclipse.org:1883", topicName, isFormattedTopic);
 
             topicsMap.put(topicName, clientTopic);
+            addLogEntry(LogEntry.LogLevel.DEBUG, String.format("Subscribed to topic %s", clientTopic.getName()));
         }
     }
 
@@ -137,6 +163,8 @@ public class MessagesController implements Observer {
     public void update(Observable o, Object arg) {
         Platform.runLater(() -> {
             if (arg instanceof ClientMessage) {
+                addLogEntry(LogEntry.LogLevel.INFO, "Got a message from: "+((ClientMessage) arg).getTopicName());
+
                 System.out.println("got message from observable");
                 System.out.printf("Topic was: %s%n", ((ClientMessage) arg).getTopicName());
                 System.out.printf("message is: %s%n", ((ClientMessage) arg).getMessage());
@@ -145,9 +173,12 @@ public class MessagesController implements Observer {
                 ClientTopic topic = topicsMap.get(topicName);
 
                 if (!topic.isFormattedTopic()) {
+                    addLogEntry(LogEntry.LogLevel.INFO, "Topic was not formatted");
                     topic.getMessages().add((ClientMessage) arg);
                 }
                 else {
+                    addLogEntry(LogEntry.LogLevel.INFO, "Topic was formatted");
+
                     KeyValuePairList keyValuePairList = formattedMessageParser.parseString(((ClientMessage) arg).getMessage());
                     for (KeyValuePair kvp : keyValuePairList.getKeyValuePairList()) {
                         topic.addKeyValuePair(kvp.getKey(), kvp.getValue());

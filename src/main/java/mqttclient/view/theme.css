@@ -71,6 +71,10 @@
     -fx-background-color: #E6E2AF;
 }
 
+.list-cell:odd { /* <=== changed to even */
+    -fx-background-color: #EFECCA;
+}
+
 .list-cell:filled:hover {
     -fx-background-color: #EFECCA;
     -fx-text-fill: #002F2F;
@@ -92,4 +96,39 @@
 .text-field.error {
     -fx-text-box-border: red ;
     -fx-focus-color: red ;
+}
+
+.table-view {
+    -fx-base: #EFECCA;
+    -fx-control-inner-background: #EFECCA;
+    -fx-background-color: #EFECCA;
+    -fx-table-cell-border-color: transparent;
+    -fx-table-header-border-color: transparent;
+    -fx-padding: 5;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: transparent;
+}
+
+.table-view .column-header, .table-view .filler {
+    -fx-size: 35;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color:
+    transparent
+    transparent
+    derive(-fx-base, 80%)
+    transparent;
+    -fx-border-insets: 0 10 1 0;
+}
+
+.table-view .column-header .label {
+    -fx-font-size: 14pt;
+    -fx-text-fill: #002F2F;
+    -fx-alignment: center-left;
+    -fx-opacity: 1;
+}
+
+.table-view:focused .table-row-cell:filled:focused:selected {
+    -fx-background-color: linear-gradient(#b4b08a 0%, #A7A37E 25%, #a19d79 75%, #94906d 100%);
 }
