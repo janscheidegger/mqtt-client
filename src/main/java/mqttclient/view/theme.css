@@ -132,3 +132,10 @@
 .table-view:focused .table-row-cell:filled:focused:selected {
     -fx-background-color: linear-gradient(#b4b08a 0%, #A7A37E 25%, #a19d79 75%, #94906d 100%);
 }
+
+.topic-name {
+    -fx-font-size: 14pt;
+    -fx-text-fill: #002F2F;
+    -fx-alignment: center-left;
+    -fx-opacity: 1;
+}

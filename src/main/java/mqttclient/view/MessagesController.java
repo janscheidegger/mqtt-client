@@ -13,6 +13,7 @@ import main.java.mqttclient.i18n.I18n;
 import main.java.mqttclient.model.*;
 import main.java.mqttclient.mqtt.MqttAccessor;
 import main.java.mqttclient.parser.FormattedMessageParser;
+import org.eclipse.paho.client.mqttv3.MqttException;
 
 import java.util.Collections;
 import java.util.Locale;
@@ -70,6 +71,7 @@ public class MessagesController implements Observer {
         formattedMessageParser = new FormattedMessageParser();
         mqttAccessor = MqttAccessor.getInstance();
         mqttAccessor.addObserver(this);
+        addLogEntry(LogEntry.LogLevel.DEBUG, "Created MqttAccessor Singleton");
     }
 
     @FXML
@@ -77,6 +79,7 @@ public class MessagesController implements Observer {
 
         addLogEntry(LogEntry.LogLevel.DEBUG, "Controller Initialized");
 
+        // Listener for changes on Map to update the List
         topicsMap.addListener((MapChangeListener<String, ClientTopic>) change -> {
             topicsListView.getItems().removeAll(change.getKey());
             if (change.wasAdded()) {
@@ -84,8 +87,8 @@ public class MessagesController implements Observer {
             }
         });
 
-        logEntryTableView.setItems(logData);
 
+        // Set Lists to FXML Elements to connect both!
         chart.setData(pieChartData);
         topicsListView.getItems().setAll(topicsMap.keySet());
 
@@ -102,7 +105,7 @@ public class MessagesController implements Observer {
             }
         });
 
-
+        logEntryTableView.setItems(logData);
         messageColumn.setCellValueFactory(cellData -> cellData.getValue().messageProperty());
         timeColumn.setCellValueFactory(cellData -> cellData.getValue().timeProperty().asString());
         severityColumn.setCellValueFactory(cellData -> cellData.getValue().logLevelProperty().asString());
@@ -114,10 +117,11 @@ public class MessagesController implements Observer {
     private void addLogEntry(LogEntry.LogLevel logLevel, String message) {
         logData.add(new LogEntry(logLevel, message));
     }
-
     @FXML
     private void subscribeTopic() throws ExecutionException, InterruptedException {
         ObservableList<String> styleClass = topicNameTextField.getStyleClass();
+
+        // Check if a valid topic is available Throw error if not!
         if (topicNameTextField.getText().trim().length()==0) {
             addLogEntry(LogEntry.LogLevel.ERROR, "Invalid Topic!");
             if (! styleClass.contains("error")) {
@@ -127,15 +131,28 @@ public class MessagesController implements Observer {
             Alert alert = new Alert(Alert.AlertType.ERROR, I18n.getString("error.topicname.missing"));
             alert.show();
         } else {
-            // remove all occurrences:
+            // remove all occurrences of error on field!
             styleClass.removeAll(Collections.singleton("error"));
             String topicName = topicNameTextField.getText();
             boolean isFormattedTopic = formattedTopicCheckbox.isSelected();
 
-            ClientTopic clientTopic = mqttAccessor.subscribeTopic("tcp://iot.eclipse.org:1883", topicName, isFormattedTopic);
+            // Subscribe to topic on public Broker!
+            Platform.runLater(() -> {
+                ClientTopic clientTopic = null;
+                String brokerUrl = "tcp://iot.eclipse.org:1883";
 
-            topicsMap.put(topicName, clientTopic);
-            addLogEntry(LogEntry.LogLevel.DEBUG, String.format("Subscribed to topic %s", clientTopic.getName()));
+                try {
+                    clientTopic = mqttAccessor.subscribeTopic(brokerUrl, topicName, isFormattedTopic);
+                    topicsMap.put(topicName, clientTopic);
+                    addLogEntry(LogEntry.LogLevel.DEBUG, String.format("Subscribed to topic %s", clientTopic.getName()));
+                } catch (MqttException e) {
+                    addLogEntry(LogEntry.LogLevel.ERROR, String.format("Could not connect to %s", brokerUrl));
+                    Alert alert = new Alert(Alert.AlertType.ERROR, I18n.getString("broker.connection.error", brokerUrl));
+                    alert.show();
+                }
+
+
+            });
         }
     }
 
@@ -144,6 +161,8 @@ public class MessagesController implements Observer {
         if (clientTopic != null) {
             topicNameLabel.setText(clientTopic.getName());
             messagesList.clear();
+
+            // Check if topic is formatted or not!
             if(clientTopic.isFormattedTopic()) {
 
                 chartTab.setDisable(false);
@@ -161,13 +180,12 @@ public class MessagesController implements Observer {
 
     @Override
     public void update(Observable o, Object arg) {
+
+        // Do Not Block UI!
         Platform.runLater(() -> {
             if (arg instanceof ClientMessage) {
                 addLogEntry(LogEntry.LogLevel.INFO, "Got a message from: "+((ClientMessage) arg).getTopicName());
 
-                System.out.println("got message from observable");
-                System.out.printf("Topic was: %s%n", ((ClientMessage) arg).getTopicName());
-                System.out.printf("message is: %s%n", ((ClientMessage) arg).getMessage());
                 String topicName = ((ClientMessage) arg).getTopicName();
 
                 ClientTopic topic = topicsMap.get(topicName);

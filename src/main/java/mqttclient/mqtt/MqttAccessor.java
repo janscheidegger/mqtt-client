@@ -40,7 +40,6 @@ public class MqttAccessor extends Observable implements MqttCallback {
         try {
             MqttClient mqttClient = new MqttClient(brokerUrl, UUID.randomUUID().toString());
             mqttClient.connect();
-            System.out.println("Connected to " + brokerUrl);
             mqttClientMap.put(brokerUrl, mqttClient);
             return mqttClient;
         } catch (MqttException e) {
@@ -77,7 +76,7 @@ public class MqttAccessor extends Observable implements MqttCallback {
 
     }
 
-    public ClientTopic subscribeTopic(String brokerUrl, String topicName, boolean isFormattedTopic) {
+    public ClientTopic subscribeTopic(String brokerUrl, String topicName, boolean isFormattedTopic) throws MqttException {
         try {
             MqttClient mqttClient;
             if (mqttClientMap.get(brokerUrl) != null) {
@@ -94,10 +93,9 @@ public class MqttAccessor extends Observable implements MqttCallback {
 
             return new ClientTopic(topicName, isFormattedTopic);
         } catch (MqttException e) {
-            e.printStackTrace();
             System.err.println("Error while connecting to " + topicName + " on Broker :" + brokerUrl);
+            throw new MqttException(e);
         }
-        return null;
     }
 
 

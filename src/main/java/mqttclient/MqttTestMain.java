@@ -2,6 +2,7 @@ package main.java.mqttclient;
 
 
 import main.java.mqttclient.mqtt.MqttAccessor;
+import org.eclipse.paho.client.mqttv3.MqttException;
 
 /**
  * mqqt-client
@@ -16,7 +17,11 @@ public class MqttTestMain {
         MqttAccessor mqttAccessor = MqttAccessor.getInstance();
 
 
-        mqttAccessor.subscribeTopic("tcp://iot.eclipse.org:1883", "jan/test", false);
+        try {
+            mqttAccessor.subscribeTopic("tcp://iot.eclipse.org:1883", "jan/test", false);
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
 
         while(mqttAccessor.isCurrentlyListening()) {
             try {

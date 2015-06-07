@@ -34,7 +34,7 @@
                <children>
                   <VBox prefHeight="398.0" prefWidth="416.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                      <children>
-                        <Label fx:id="topicNameLabel" prefHeight="52.0" prefWidth="200.0" />
+                        <Label fx:id="topicNameLabel" prefHeight="26.0" prefWidth="388.0" styleClass="topic-name" stylesheets="@theme.css" />
                         <TabPane prefHeight="398.0" prefWidth="416.0" tabClosingPolicy="UNAVAILABLE">
                           <tabs>
                             <Tab closable="false" text="%tab.data">
@@ -59,7 +59,7 @@
                                 <content>
                                   <AnchorPane minHeight="0.0" minWidth="0.0">
                                        <children>
-                                          <TableView fx:id="logEntryTableView" prefHeight="339.0" prefWidth="390.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                          <TableView fx:id="logEntryTableView" prefWidth="390.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                             <columns>
                                               <TableColumn fx:id="severityColumn" prefWidth="65.0" text="%log.severity" />
                                               <TableColumn fx:id="timeColumn" prefWidth="83.0" text="%log.time" />
